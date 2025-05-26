@@ -42,8 +42,16 @@ const Catalog = () => {
                 key={`${product.id}-${index}`} // Clave única combinando id e índice
                 className="border border-purple-200 p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-white animate-fade-in animation-delay-300"
               >
-                <div className="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center text-gray-500">
-                  <span>Imagen del producto (pronto)</span>
+                <div className="h-72 overflow-hidden rounded-lg mb-4 flex items-center justify-center bg-gray-100 border border-gray-200">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="max-w-full max-h-full object-contain transition-opacity duration-300 hover:opacity-90"
+                    onError={(e) => {
+                      console.log('Error al cargar imagen del producto:', product.image);
+                      e.target.src = 'https://via.placeholder.com/300x400?text=Imagen+No+Disponible';
+                    }}
+                  />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">{product.name}</h2>
                 <p className="text-gray-600 mb-2 line-clamp-2">{product.description}</p>

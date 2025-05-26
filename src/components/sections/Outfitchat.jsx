@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const OutfitChat = ({ onOutfitGenerated }) => {
@@ -8,6 +8,23 @@ const OutfitChat = ({ onOutfitGenerated }) => {
   const [accessory, setAccessory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [products, setProducts] = useState([]); // Lista de todos los productos con imágenes
+
+  // Cargar todos los productos al montar el componente
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:8081/api/productos');
+        console.log('Productos cargados:', response.data);
+        setProducts(response.data); // Asume que response.data es un array de { name, imgUrl, ... }
+      } catch (err) {
+        console.error('Error al cargar productos:', err);
+        setError('No se pudieron cargar los productos. Usando imágenes por defecto.');
+        setProducts([]); // Continúa con placeholders si falla
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const generateOutfit = async (e) => {
     e.preventDefault();
@@ -45,16 +62,16 @@ const OutfitChat = ({ onOutfitGenerated }) => {
 
         lines.forEach(line => {
           console.log('Procesando línea:', line);
-          // Detectar ítems con tienda (más flexible, sin exigir "Tienda:" explícito)
           const itemMatch = line.match(/^\*\s+\*\*([^:]+):\*\*\s*([^()]+?)\s*\(([^)]+)\)/i);
           if (itemMatch) {
             const itemName = itemMatch[2].trim();
             const store = itemMatch[3].trim();
-            items.push({ name: itemName, store });
-            console.log('Ítem encontrado:', { name: itemName, store });
-          }
-          // Detectar accesorio
-          else if (line.includes('**Accesorio:**')) {
+            // Buscar imagen en la lista de productos
+            const productMatch = products.find(p => p.name.toLowerCase() === itemName.toLowerCase());
+            const imgUrl = productMatch?.imgUrl || `https://via.placeholder.com/150?text=${encodeURIComponent(itemName)}`;
+            items.push({ name: itemName, store, imgUrl });
+            console.log('Ítem encontrado:', { name: itemName, store, imgUrl });
+          } else if (line.includes('**Accesorio:**')) {
             accessoryText = line.replace('**Accesorio:**', '').trim().replace(/-\s*.*/, '');
             console.log('Accesorio encontrado:', accessoryText);
           }
@@ -160,11 +177,22 @@ const OutfitChat = ({ onOutfitGenerated }) => {
               </h4>
               <div className="h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-purple-100 border border-purple-200 rounded-xl p-3 bg-purple-50 shadow-inner">
                 {outfitItems.length > 0 && (
-                  <ul className="list-none pl-0 space-y-1">
+                  <ul className="list-none pl-0 space-y-2">
                     {outfitItems.map((item, index) => (
-                      <li key={index} className="text-gray-800 border-b border-purple-200 py-1 flex justify-between items-center text-sm">
-                        <span className="font-semibold">{item.name}</span>
-                        <span className="text-purple-500">({item.store})</span>
+                      <li key={index} className="flex items-center space-x-3 py-1">
+                        <img
+                          src={item.imgUrl}
+                          alt={item.name}
+                          className="w-12 h-12 object-cover rounded-md"
+                          onError={(e) => {
+                            console.log('Error al cargar imagen del item:', item.imgUrl);
+                            e.target.src = `https://via.placeholder.com/150?text=${encodeURIComponent(item.name)}`;
+                          }}
+                        />
+                        <div>
+                          <span className="text-gray-800 font-semibold">{item.name}</span>
+                          <span className="text-purple-500 text-sm ml-2">({item.store})</span>
+                        </div>
                       </li>
                     ))}
                   </ul>

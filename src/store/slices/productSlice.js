@@ -1,38 +1,51 @@
-// import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+// productsSlice.js
+import { createSlice } from '@reduxjs/toolkit';
 
-// const API_URL = 'http://localhost:8081/api/productos';
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-export const fetchProducts = createAsyncThunk('products/fetchProducts', async () => {
-  const response = await axios.get('http://localhost:8081/api/productos'); // Reemplaza con tu endpoint
-  return response.data; // Asegúrate de que esto sea un array
-});
-
-const productSlice = createSlice({
+const productsSlice = createSlice({
   name: 'products',
   initialState: {
-    products: [], // Inicializa como array vacío
+    products: [],
     loading: false,
     error: null,
   },
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchProducts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.loading = false;
-        state.products = action.payload; // Asegúrate de que action.payload sea un array
-      })
-      .addCase(fetchProducts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      });
+  reducers: {
+    fetchProductsStart(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    fetchProductsSuccess(state, action) {
+      const products = action.payload.map((product) => ({
+        id: product.productId,
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        image: product.imgUrl, // Mapeamos imgUrl a image
+      }));
+      state.products = products;
+      state.loading = false;
+    },
+    fetchProductsFailure(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
   },
 });
 
-export default productSlice.reducer;
+export const { fetchProductsStart, fetchProductsSuccess, fetchProductsFailure } = productsSlice.actions;
+export default productsSlice.reducer;
+
+export const fetchProducts = () => async (dispatch) => {
+  try {
+    dispatch(fetchProductsStart());
+    const response = await fetch('http://localhost:8081/api/productos'); // Ajusta la URL de tu API
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    console.log('Datos recibidos de la API (products):', data); // Log para depuración
+    dispatch(fetchProductsSuccess(data));
+  } catch (error) {
+    console.error('Error al fetchProducts:', error);
+    dispatch(fetchProductsFailure(error.message));
+  }
+};
