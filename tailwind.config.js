@@ -1,5 +1,5 @@
  /** @type {import('tailwindcss').Config} */
- export default {
+export default {
   content: [
     "./index.html",
     "./src/**/*.{js,jsx}",
@@ -7,13 +7,17 @@
   
   theme: {
     extend: {
-      colors:{
-        'pulrple-light': '#E6D6FE', // Agregar el color personalizado
-        'purple-dark': '#B888F8', // Agregar el color personalizado
-        'purple-lightplus':'#F1E9FE'
-
-
-      }
+      colors: {
+        'purple-light': '#E6D6FE',
+        'purple-dark': '#B888F8',
+        'purple-lightplus': '#F1E9FE',
+        'cloufPurple': "#7B61FF",
+        'cloufLavender': "#E6DFFF",
+        'cloufAccent': "#1FB6FF"
+      },
+      backgroundImage: {
+        'cloufit-gradient': 'linear-gradient(135deg, #00d4ff, #8e2de2)',
+      },
     },
   },
   plugins: [],

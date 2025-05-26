@@ -1,17 +1,19 @@
+import { Link } from 'react-router-dom';
 
 const CategoryCard = ({ name, imageUrl }) => {
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="w-full h-60">
-        <img src={imageUrl} alt={name} className=" w-full h-full object-cover" />
-      </div>
-      <div className="p-2">
-        <h3 className="text-lg font-semibold text-gray-800 text-center">{name}</h3>
-      </div>
-    </div>
+    <Link
+      to={`/categoria/${name.toLowerCase()}`}
+      className="block bg-white p-4 rounded-lg shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 transform text-center"
+    >
+      <img
+        src={imageUrl}
+        alt={name}
+        className="w-full h-48 object-cover rounded-lg mb-4"
+      />
+      <h3 className="text-xl font-semibold text-gray-800">{name}</h3>
+    </Link>
   );
 };
+
 export default CategoryCard;
-
-
-
